@@ -1,0 +1,26 @@
+[package]
+name = "opentako"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# 系统托盘与菜单
+tray-icon = "0.14"
+# 提供操作系统的事件循环 (Tray-icon 在 Windows 上必须依赖事件循环才能响应点击)
+tao = "0.28"
+# 跨平台打开默认浏览器
+webbrowser = "0.8"
+# 添加这个库来处理图片
+image = "0.25"
+# Tokio 异步运行时
+tokio = { version = "1.36", features = ["full"] }
+# Axum Web 框架，开启 websocket 特性
+axum = { version = "0.7", features = ["ws"] }
+tower-http = { version = "0.5", features = ["cors"] }
+# 序列化与反序列化
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+#ort = "2.0.0-rc.12"       # ONNX Runtime 极速引擎
+ort = { version = "2.0.0-rc.12", features = ["load-dynamic"] }
+#ndarray = "0.15"  # Rust 的张量计算基础库
