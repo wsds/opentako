@@ -1,36 +1,37 @@
 use axum::{
     extract::ws::{Message, WebSocket, WebSocketUpgrade},
     response::{Html, IntoResponse},
-    routing::get,
     Router,
+    routing::get,
 };
-use std::time::Duration;
-use tokio::time::sleep;
-use crate::engine::TtsEngine;
-use std::sync::Arc;
-use tower_http::cors::{Any, CorsLayer};
-use axum::http::{header, Method};
+use axum::http::Method;
+use tower_http::{
+    cors::{Any, CorsLayer},
+    services::{ServeDir, ServeFile},
+};
 
 use crate::config::{WsEvent, WsRequest};
+use crate::engine::TtsEngine;
 
 pub async fn start(engine: TtsEngine) {
     // 🛡️ 核心：配置 CORS 和 PNA (Private Network Access)
     let cors = CorsLayer::new()
-        // 允许任何域名访问（如果你的网站域名是固定的，可以把 Any 换成你的域名以增加安全性）
         .allow_origin(Any)
         .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
         .allow_headers(Any)
-        // 🚀 最关键的一句：明确告诉 Chrome 允许公网网页访问本地私有网络！
         .allow_private_network(true);
+    println!("🐙 OpenTako 准备开启服务器!");
+
+    let serve_dir = ServeDir::new("assets/html")
+        .not_found_service(ServeFile::new("assets/html/index.html"));
     // 构建路由
     let app = Router::new()
-        .route("/", get(mock_config_page))
+        // .route("/", get(mock_config_page))
         .route("/api/ws", get(ws_handler))
+        .fallback_service(serve_dir)
         .with_state(engine)
-        // 将 CORS 中间件挂载到整个路由上
         .layer(cors);
 
-    // 绑定本地端口 3000
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await
         .unwrap();
@@ -227,7 +228,7 @@ async fn handle_socket(mut socket: WebSocket, engine: TtsEngine) {
 
                                 // 核心：只要算出一段，立刻通过 WebSocket 扔给前端！
                                 let _ = socket.send(Message::Binary(audio_bytes)).await;
-                            },
+                            }
                             Err(e) => {
                                 println!("❌ 推理失败: {}", e);
                             }

@@ -21,6 +21,8 @@ fn get_asset_path(relative_path: &str) -> String {
 }
 
 fn main() {
+    println!("🐙 OpenTako 准备开启服务器!");
+
     let model_path = get_asset_path("assets/models/en_US-hfc_female-medium.onnx");
     let lexicon_path = get_asset_path("assets/lexicon.json");
 
